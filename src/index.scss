@@ -100,7 +100,8 @@ footer {
 
 .line {
     display: inline-block;
-    min-height: 1em;
+    line-height: 1rem;
+    min-height: 1rem;
 }
 
 @keyframes blink {

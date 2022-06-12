@@ -1,239 +1,219 @@
-// from https://www.javascripttutorial.net/javascript-queue/
-class Queue {
-    constructor() {
-        /** @type {Object<number, Promise<void>>} */
-        this.fns = {};
-        this.head = 0;
-        this.tail = 0;
-        this.interrupted = false;
-    }
-    /**
-     * @param {Promise<void>} fn 
-     */
-    enqueue(fn) {
-        this.fns[this.tail] = fn;
-        this.tail++;
-    }
-    dequeue() {
-        const item = this.fns[this.head];
-        delete this.fns[this.head];
-        this.head++;
-        return item;
-    }
-    peek() {
-        return this.fns[this.head];
-    }
-    get length() {
-        return this.tail - this.head;
-    }
-    get isEmpty() {
-        return this.length === 0;
-    }
-    interrupt() {
-        this.interrupted = true;
-    }
-    reset() {
-        this.fns = {};
-        this.head = 0;
-        this.tail = 0;
-        this.interrupted = false;
-    }
-    async poke() {
-        while (!this.isEmpty) {
-            if (this.interrupted) {
-                this.reset();
-                return;
-            }
+import { AutoQueue } from './AutoQueue.mjs';
+import { Writer } from './Writer.mjs';
 
-            const fn = this.dequeue();
-            await fn();
-        }
-    }
+run(document.getElementById("content"), document.getElementById("control"));
+
+/**
+ * 
+ * @param {HTMLDivElement} parent 
+ * @param {HTMLButtonElement} control 
+ */
+async function run(parent, control) {
+    const contentContainer = parent;
+    const controlButton = control;
+
+    const globQueue = new AutoQueue();
+    const globWriter = new Writer(contentContainer);
+
+    globQueue.enqueue(playIntro(globWriter, controlButton));
 }
 
-run(document.getElementById("content"));
+/**
+ * 
+ * @param {Writer} writer 
+ * @param {HTMLButtonElement} button
+ */
+function playIntro(writer, button) {
+    const sceneQueue = new AutoQueue();
 
-async function run(parent) {
-    const contentContainer = parent;
-    const control = document.getElementById("control")
-
-    const globQueue = new Queue();
-
-    // not really happy doing it this way
-    // but it is convenient and allows to
-    // overwrite the target if required
-    newLine = newLine.bind({ target: contentContainer });
-    getCurrentCursorSpace = getCurrentCursorSpace.bind({ target: contentContainer });
-    handle = handle.bind({ queue: globQueue });
-
-    control.addEventListener("click", async (e) => {
-        const target = e.target;
-
-        globQueue.interrupt();
-
-        await playSetup(contentContainer);
-        // const isPlaying = target.dataset.playing === "true";
-
-        // if (isPlaying) {
-        //     target.innerHTML = "▶";
-        //     target.dataset.playing = false;
-        // } else {
-        //     target.innerHTML = "■";
-        //     target.dataset.playing = true;
-        // }
+    button.addEventListener("click", () => {
+        console.log("click");
+        sceneQueue.stop();
     });
 
-    await playIntro(contentContainer, control, globQueue);
-
-}
-
-async function playIntro(parent, control, queue) {
-    clear(parent);
-
-    const introLines = [
-        ["Press the ◉ button (or your enter key) to begin setup.", async () => {
-            await wait(100);
-            control.disabled = false;
-            control.focus();
-        }],
+    const actions = [
+        () => writer.clear(),
+        // () => { writer.delay = 25; },
+        "Press the ◉ button (or your enter key) to begin setup.",
+        () => { button.disabled = false; button.focus(); },
+        "",
+        // () => { writer.delay = 100; },
         "This is required because modern Browsers save you from having random crap played",
         "",
         "Aren't they nice?"
     ];
 
-    for (const line of introLines) {
-        handle(line);
-    }
+    handleLine(writer, actions, sceneQueue);
 
-    console.log("Ready to Start");
-
-    await queue.poke();
+    return () => { sceneQueue.start() };
 }
 
-async function playSetup(parent) {
-    clear(parent);
+/**
+ * 
+ * @param {Writer} writer
+ * @param {(string|Function)[]} lines 
+ * @param {AutoQueue} queue 
+ */
+function handleLine(writer, lines, queue) {
+    for (const line of lines) {
+        const lineType = typeof line;
 
-    const setupLines = [
-        "Alright, let's setup our wonderful singing voice first.",
-        ""
-    ];
-
-    for (const line of setupLines) {
-        await handle(line);
-    }
-}
-
-async function handle(line) {
-    /** @type {Queue} */
-    const queue = this.queue;
-
-    // allows to interrupt earlier
-    const perWordEnqueue = (line) => {
-        const words = line.split(" ");
-        const lastWord = words.splice(-1, 1);
-
-        for (const word of words) {
-            queue.enqueue(() => { return write(`${word} `, false) });
-        }
-
-        queue.enqueue(() => { return write(lastWord[0]) });
-    };
-
-    // shortcut for simple lines
-    if (typeof line === "string") {
-        // queue.enqueue(() => { return write(line) });
-        perWordEnqueue(line);
-        return;
-    }
-
-    if (!Array.isArray(line)) {
-        console.log("And what am I supposed to do with that?", line);
-        return;
-    }
-
-    for (const item of line) {
-        const itemType = typeof item;
-        switch (itemType) {
+        switch (lineType) {
             case "string":
-                // queue.enqueue(() => { return write(item) });
-                perWordEnqueue(item);
+                if (line.trim().length === 0) {
+                    queue.enqueue(() => writer.newLine(), false);
+                    break;
+                }
+
+                const words = line.split(" ");
+                if (words.length > 5) {
+                    const lastWord = words.splice(-1)[0];
+
+                    for (const word of words) {
+                        queue.enqueue(() => writer.write(`${word} `, false), false);
+                    }
+
+                    queue.enqueue(() => writer.write(lastWord), false)
+
+                    break;
+                }
+                queue.enqueue(() => writer.write(line), false);
                 break;
             case "function":
-                queue.enqueue(() => { return item() });
+                queue.enqueue(line, false);
                 break;
             default:
-                console.log(`Unhandled type ${itemType}`, item);
+                console.debug(`Unhandled line type ${lineType}`, line);
+                break;
         }
     }
 }
 
-async function write(sentence, withNewLine = true, delay = 100) {
-    const target = await getWriteSpace();
-    const letters = sentence.split("");
-    let i = 0;
+// async function run(parent) {
+//     const contentContainer = parent;
+//     const control = document.getElementById("control")
 
-    while (i < letters.length) {
-        await wait(delay);
-        target.append(letters[i]);
-        i++;
-    }
+//     const globQueue = new Queue();
 
-    if (withNewLine) {
-        await wait(delay);
-        return newLine();
-    }
+//     // not really happy doing it this way
+//     // but it is convenient and allows to
+//     // overwrite the target if required
+//     newLine = newLine.bind({ target: contentContainer });
+//     getCurrentCursorSpace = getCurrentCursorSpace.bind({ target: contentContainer });
 
-    return true;
-}
+//     control.addEventListener("click", async (e) => {
+//         // const target = e.target;
 
-async function newLine() {
-    /** @type {HTMLDivElement} */
-    const target = this.target;
+//         globQueue.interrupt();
 
-    // there should only be one, this is just precaution
-    const allCursors = target.querySelectorAll("#cursor")
-    for (const cursor of [...allCursors]) {
-        cursor.remove();
-    }
+//         await playSetup(contentContainer, control, globQueue);
+//         // const isPlaying = target.dataset.playing === "true";
 
-    const currentLines = target.querySelectorAll(".line.current")
-    for (const line of [...currentLines]) {
-        line.className = "line";
-    }
+//         // if (isPlaying) {
+//         //     target.innerHTML = "▶";
+//         //     target.dataset.playing = false;
+//         // } else {
+//         //     target.innerHTML = "■";
+//         //     target.dataset.playing = true;
+//         // }
+//     });
 
-    const newline = document.createElement("span");
-    newline.classList.add("line", "current");
-    newline.innerHTML = `<span></span><span id="cursor">&nbsp;</span>`;
+//     await playIntro(contentContainer, control, globQueue);
+// }
 
-    target.appendChild(newline);
+// async function playIntro(parent, control, queue) {
+//     queue.enqueue(() => { clear(parent) });
 
-    return true;
-}
+//     const introLines = [
+//         [
+//             // "Press the ◉ button (or your enter key) to begin setup.", async () => {
+//             //     await wait(100);
+//             //     control.disabled = false;
+//             //     control.focus();
+//             // }],
+//             "Press t", async () => {
+//                 await wait(100);
+//                 control.disabled = false;
+//                 control.focus();
+//             }],
+//         "This is required because modern Browsers save you from having random crap played",
+//         "",
+//         "Aren't they nice?"
+//     ];
 
-async function getCurrentCursorSpace() {
-    /** @type {HTMLDivElement} */
-    const target = this.target;
+//     for (const line of introLines) {
+//         handle(line, queue);
+//     }
 
-    return target.querySelector(".line.current span:first-of-type");
-}
+//     console.debug("poke intro");
+//     await queue.poke();
+// }
 
-async function getWriteSpace() {
-    const cursorSpace = await getCurrentCursorSpace();
+// async function playSetup(parent, control, queue) {
+//     queue.enqueue(() => { clear(parent) });
 
-    if (cursorSpace instanceof HTMLElement) {
-        return cursorSpace;
-    }
+//     control.disabled = true;
 
-    await newLine();
-    return getCurrentCursorSpace();
-}
+//     const setupLines = [
+//         "Alright, let's setup our wonderful singing voice first.",
+//         ""
+//     ];
 
-function wait(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+//     for (const line of setupLines) {
+//         handle(line, queue);
+//     }
 
-function clear(elem) {
-    while (elem.firstChild) {
-        elem.removeChild(elem.firstChild);
-    }
-}
+//     console.debug("poke setup");
+//     await queue.poke();
+// }
+
+// /**
+//  * 
+//  * @param {String | Array} line 
+//  * @param {Queue} queue 
+//  * @returns 
+//  */
+// async function handle(line, queue) {
+
+//     // allows to interrupt earlier
+//     const perWordEnqueue = (line) => {
+//         const words = line.split(" ");
+//         const lastWord = words.splice(-1, 1);
+
+//         for (const word of words) {
+//             queue.enqueue(() => { return write(`${word} `, false) });
+//         }
+
+//         queue.enqueue(() => { return write(lastWord[0]) });
+//     };
+
+//     // shortcut for simple lines
+//     if (typeof line === "string") {
+//         // queue.enqueue(() => { return write(line) });
+//         perWordEnqueue(line);
+//         return;
+//     }
+
+//     if (!Array.isArray(line)) {
+//         console.log("And what am I supposed to do with that?", line);
+//         return;
+//     }
+
+//     for (const item of line) {
+//         const itemType = typeof item;
+//         switch (itemType) {
+//             case "string":
+//                 // queue.enqueue(() => { return write(item) });
+//                 perWordEnqueue(item);
+//                 break;
+//             case "function":
+//                 queue.enqueue(() => { return item() });
+//                 break;
+//             default:
+//                 console.log(`Unhandled type ${itemType}`, item);
+//         }
+//     }
+// }
+
+
+
