@@ -19,14 +19,15 @@ body {
 }
 
 header {
-    height: 3rem;
+    height: 2rem;
 
     flex: 0 1 auto;
 
     padding: 1rem;
     border: 1px dashed $amber;
     vertical-align: baseline;
-    line-height: 3rem;
+    font-size: 2rem;
+    line-height: 2rem;
 
     display: flex;
     flex-flow: row wrap;
@@ -37,6 +38,8 @@ header {
     h1.title {
         display: inline;
         margin: 0;
+        font-size: 2rem;
+        line-height: 2rem;
     }
 }
 
@@ -54,6 +57,23 @@ header {
         color: grey;
         border-color: grey;
         border-style: dashed;
+    }
+
+    @keyframes pulsate {
+        0% {
+            box-shadow: 0 0.1rem 0.5rem rgba($amber, 0);
+        }
+        50% {
+            box-shadow: 0 0.1rem 0.5rem rgba($amber, 0.4);
+        }
+        100% {
+            box-shadow: 0 0.1rem 0.5rem rgba($amber, 0.8);
+        }
+    }
+
+    &:focus {
+        outline: $amber;
+        animation: pulsate 1s alternate infinite;
     }
 }
 

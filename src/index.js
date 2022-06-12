@@ -5,6 +5,8 @@ async function setup(parent) {
     // const contentContainer = document.getElementById("content");
     const control = document.getElementById("control")
 
+    control.focus();
+
     clear(contentContainer);
 
     // not really happy doing it this way
@@ -15,27 +17,27 @@ async function setup(parent) {
 
     control.addEventListener("click", (e) => {
         const target = e.target;
-        const isPlaying = target.dataset.playing === "true";
+        // const isPlaying = target.dataset.playing === "true";
 
-        if (isPlaying) {
-            target.innerHTML = "▶";
-            target.dataset.playing = false;
-        } else {
-            target.innerHTML = "■";
-            target.dataset.playing = true;
-        }
+        // if (isPlaying) {
+        //     target.innerHTML = "▶";
+        //     target.dataset.playing = false;
+        // } else {
+        //     target.innerHTML = "■";
+        //     target.dataset.playing = true;
+        // }
     });
 
     control.disabled = false;
 
-    const setupLines = [
-        "Press the ▶ Play button to begin setup.",
+    const introLines = [
+        "Press the ◉ button to begin setup.",
         "This is required because modern Browsers save you from having random crap played",
         "",
         "Aren't they nice?"
     ];
 
-    for (const line of setupLines) {
+    for (const line of introLines) {
         await write(line);
     }
 
