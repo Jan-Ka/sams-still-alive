@@ -3,8 +3,11 @@
     "version": "0.0.1",
     "description": "Play Still Alive and have Speech Synthesis sing it too",
     "main": "index.js",
+    "source": "src/index.html",
+    "browserslist": "> 0.5%, last 2 versions, not dead",
     "scripts": {
-        "serve": "parcel src/index.html"
+        "serve": "parcel src/index.html",
+        "build": "parcel build src/index.html"
     },
     "repository": {
         "type": "git",
@@ -19,5 +22,8 @@
     "devDependencies": {
         "@parcel/transformer-sass": "^2.6.0",
         "parcel": "^2.6.0"
+    },
+    "dependencies": {
+        "tone": "^14.7.77"
     }
 }
