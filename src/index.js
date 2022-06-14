@@ -1,219 +1,210 @@
-import { AutoQueue } from './AutoQueue.mjs';
-import { Writer } from './Writer.mjs';
+import * as Tone from 'tone';
+import * as song from './still_alive_lyrics.mid.json';
+import * as quotes from './random_quotes.json';
 
-run(document.getElementById("content"), document.getElementById("control"));
+const speech = window.speechSynthesis;
 
-/**
- * 
- * @param {HTMLDivElement} parent 
- * @param {HTMLButtonElement} control 
- */
-async function run(parent, control) {
-    const contentContainer = parent;
-    const controlButton = control;
+/** @type {HTMLButtonElement} */
+const controlButton = document.getElementById("control");
+/** @type {HTMLDivElement} */
+const settings = document.getElementById("settings");
+/** @type {HTMLDivElement} */
+const instructions = document.getElementById("instructions");
+/** @type {HTMLSelectElement} */
+const settingsSelect = document.getElementById("voice");
+/** @type {HTMLDivElement} */
+const terminal = document.getElementById("terminal");
 
-    const globQueue = new AutoQueue();
-    const globWriter = new Writer(contentContainer);
+setControlIcon();
+controlButton.focus();
 
-    globQueue.enqueue(playIntro(globWriter, controlButton));
-}
+let voiceOptions = [];
+let selectedVoice = null;
 
-/**
- * 
- * @param {Writer} writer 
- * @param {HTMLButtonElement} button
- */
-function playIntro(writer, button) {
-    const sceneQueue = new AutoQueue();
+speech.onvoiceschanged = () => {
+    const voices = speech.getVoices();
 
-    button.addEventListener("click", () => {
-        console.log("click");
-        sceneQueue.stop();
-    });
-
-    const actions = [
-        () => writer.clear(),
-        // () => { writer.delay = 25; },
-        "Press the ◉ button (or your enter key) to begin setup.",
-        () => { button.disabled = false; button.focus(); },
-        "",
-        // () => { writer.delay = 100; },
-        "This is required because modern Browsers save you from having random crap played",
-        "",
-        "Aren't they nice?"
-    ];
-
-    handleLine(writer, actions, sceneQueue);
-
-    return () => { sceneQueue.start() };
-}
-
-/**
- * 
- * @param {Writer} writer
- * @param {(string|Function)[]} lines 
- * @param {AutoQueue} queue 
- */
-function handleLine(writer, lines, queue) {
-    for (const line of lines) {
-        const lineType = typeof line;
-
-        switch (lineType) {
-            case "string":
-                if (line.trim().length === 0) {
-                    queue.enqueue(() => writer.newLine(), false);
-                    break;
-                }
-
-                const words = line.split(" ");
-                if (words.length > 5) {
-                    const lastWord = words.splice(-1)[0];
-
-                    for (const word of words) {
-                        queue.enqueue(() => writer.write(`${word} `, false), false);
-                    }
-
-                    queue.enqueue(() => writer.write(lastWord), false)
-
-                    break;
-                }
-                queue.enqueue(() => writer.write(line), false);
-                break;
-            case "function":
-                queue.enqueue(line, false);
-                break;
-            default:
-                console.debug(`Unhandled line type ${lineType}`, line);
-                break;
-        }
+    for (const voice of voices) {
+        voiceOptions.push([voice.name, voice]);
     }
 }
 
-// async function run(parent) {
-//     const contentContainer = parent;
-//     const control = document.getElementById("control")
+controlButton.onclick = (e) => {
+    const stage = parseInt(controlButton.dataset.stage, 10)
 
-//     const globQueue = new Queue();
+    if (isNaN(stage)) {
+        console.error("Unknown stage.")
+        return;
+    }
 
-//     // not really happy doing it this way
-//     // but it is convenient and allows to
-//     // overwrite the target if required
-//     newLine = newLine.bind({ target: contentContainer });
-//     getCurrentCursorSpace = getCurrentCursorSpace.bind({ target: contentContainer });
+    switch (stage) {
+        case 0:
+            playSetup();
+            controlButton.dataset.stage = 1;
+            setControlIcon();
+            break;
+        case 1:
+            startMusic();
+            controlButton.dataset.stage = 2;
+            setControlIcon();
+            break;
+        case 2:
+            stopMusic();
+            controlButton.dataset.stage = 1;
+            setControlIcon();
+            break;
+        default:
+            console.warn(`Unhandled stage ${stage}`);
+            break;
+    }
+}
 
-//     control.addEventListener("click", async (e) => {
-//         // const target = e.target;
+function playSetup() {
+    settings.classList.remove("hidden");
 
-//         globQueue.interrupt();
+    if (voiceOptions.length === 0) {
+        settingsSelect.innerHTML = `<option>No Voices available. Press the ◉ Button Again.</option>`;
+        settingsSelect.disabled = true;
+        return;
+    }
 
-//         await playSetup(contentContainer, control, globQueue);
-//         // const isPlaying = target.dataset.playing === "true";
+    voiceOptions.sort((a, b) => {
+        const compareLang = a[1].lang.localeCompare(b[1].lang);
+        if (compareLang == 0) {
+            return a[0].localeCompare(b[0]);
+        }
 
-//         // if (isPlaying) {
-//         //     target.innerHTML = "▶";
-//         //     target.dataset.playing = false;
-//         // } else {
-//         //     target.innerHTML = "■";
-//         //     target.dataset.playing = true;
-//         // }
-//     });
+        return compareLang;
+    });
 
-//     await playIntro(contentContainer, control, globQueue);
-// }
+    for (const voiceOption of voiceOptions) {
+        const option = document.createElement("option");
+        option.textContent = `${voiceOption[0]} (${voiceOption[1].lang})`;
+        option.value = voiceOption[0];
+        option.dataset.name = voiceOption[0];
+        option.dataset.lang = voiceOption[1].lang;
 
-// async function playIntro(parent, control, queue) {
-//     queue.enqueue(() => { clear(parent) });
+        if (voiceOption[1].default === true) {
+            option.selected = true;
+            selectedVoice = voiceOption[1];
+        }
 
-//     const introLines = [
-//         [
-//             // "Press the ◉ button (or your enter key) to begin setup.", async () => {
-//             //     await wait(100);
-//             //     control.disabled = false;
-//             //     control.focus();
-//             // }],
-//             "Press t", async () => {
-//                 await wait(100);
-//                 control.disabled = false;
-//                 control.focus();
-//             }],
-//         "This is required because modern Browsers save you from having random crap played",
-//         "",
-//         "Aren't they nice?"
-//     ];
+        settingsSelect.appendChild(option);
+    }
 
-//     for (const line of introLines) {
-//         handle(line, queue);
-//     }
+    settingsSelect.onchange = (e) => {
+        console.log(`voice changed to ${e.target.value}`);
+        selectedVoice = voiceOptions.find((voiceOption) => voiceOption[0] === e.target.value)[1];
 
-//     console.debug("poke intro");
-//     await queue.poke();
-// }
+        const randomQuoteIndex = Math.floor(Math.random() * quotes.length);
 
-// async function playSetup(parent, control, queue) {
-//     queue.enqueue(() => { clear(parent) });
+        const utterance = new SpeechSynthesisUtterance(quotes[randomQuoteIndex]);
+        utterance.voice = selectedVoice;
+        speech.speak(utterance);
+    };
 
-//     control.disabled = true;
+    settingsSelect.disabled = false;
+    instructions.classList.add("hidden");
+}
 
-//     const setupLines = [
-//         "Alright, let's setup our wonderful singing voice first.",
-//         ""
-//     ];
+function startMusic() {
+    settings.classList.add("hidden");
+    terminal.classList.remove("hidden");
 
-//     for (const line of setupLines) {
-//         handle(line, queue);
-//     }
+    controlButton.dataset.playing = true;
 
-//     console.debug("poke setup");
-//     await queue.poke();
-// }
+    Tone.Transport.bpm.value = song.header.tempos[0].bpm;
+    const now = Tone.now() + 0.5;
 
-// /**
-//  * 
-//  * @param {String | Array} line 
-//  * @param {Queue} queue 
-//  * @returns 
-//  */
-// async function handle(line, queue) {
+    for (const track of song.tracks) {
+        // skip lyrics sounds
+        if (track.name === "lyrics") {
+            if (track.notes.length <= 0) {
+                continue;
+            }
 
-//     // allows to interrupt earlier
-//     const perWordEnqueue = (line) => {
-//         const words = line.split(" ");
-//         const lastWord = words.splice(-1, 1);
+            const part = new Tone.Part((time, note) => {
+                Tone.Draw.schedule(() => {
+                    // console.log("time:", note)
+                    if (note.text) {
+                        const utterance = new SpeechSynthesisUtterance(note.text);
+                        utterance.rate = 0.8;
+                        utterance.pitch = 1.2;
+                        utterance.voice = selectedVoice;
+                        speech.speak(utterance);
+                    }
+                });
+            }, track.notes);
 
-//         for (const word of words) {
-//             queue.enqueue(() => { return write(`${word} `, false) });
-//         }
+            part.start();
 
-//         queue.enqueue(() => { return write(lastWord[0]) });
-//     };
+            continue;
+        }
 
-//     // shortcut for simple lines
-//     if (typeof line === "string") {
-//         // queue.enqueue(() => { return write(line) });
-//         perWordEnqueue(line);
-//         return;
-//     }
+        let synth = null;
 
-//     if (!Array.isArray(line)) {
-//         console.log("And what am I supposed to do with that?", line);
-//         return;
-//     }
+        switch (track.instrument.number) {
+            case 0: // drums
+                synth = new Tone.MembraneSynth({
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1,
+                    },
+                    detune: -1200
+                }).toDestination();
+                synth.volume.value = -10;
+                break;
+            case 8: // celesta
+                synth = new Tone.MetalSynth().toDestination();
+                synth.volume.value = -10;
+            default:
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1
+                    }
+                }).toDestination();
+                break;
+        }
 
-//     for (const item of line) {
-//         const itemType = typeof item;
-//         switch (itemType) {
-//             case "string":
-//                 // queue.enqueue(() => { return write(item) });
-//                 perWordEnqueue(item);
-//                 break;
-//             case "function":
-//                 queue.enqueue(() => { return item() });
-//                 break;
-//             default:
-//                 console.log(`Unhandled type ${itemType}`, item);
-//         }
-//     }
-// }
+        const part = new Tone.Part((time, note) => {
+            synth.triggerAttackRelease(
+                note.name,
+                note.duration,
+                time,
+                note.velocity
+            );
+        }, track.notes);
 
+        part.start();
+    }
 
+    Tone.Transport.start();
+}
 
+function stopMusic() {
+    settings.classList.remove("hidden");
+    terminal.classList.add("hidden");
+
+    controlButton.dataset.playing = false;
+    Tone.Transport.stop();
+    Tone.Transport.cancel(0);
+}
+
+function setControlIcon() {
+    if (controlButton.dataset.stage === "0") {
+        controlButton.textContent = "◉";
+        return;
+    }
+
+    if (controlButton.dataset.playing === "true") {
+        controlButton.textContent = "▧";
+        return;
+    }
+
+    controlButton.textContent = "▷";
+}
