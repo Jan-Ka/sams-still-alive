@@ -112,7 +112,7 @@ main {
 }
 
 footer {
-    height: 2rem;
+    min-height: 2rem;
 
     flex: 0 1 1rem;
 
@@ -122,6 +122,12 @@ footer {
     line-height: 1rem;
 
     display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+
+    a {
+        color: $amber;
+    }
 }
 
 .hidden {
