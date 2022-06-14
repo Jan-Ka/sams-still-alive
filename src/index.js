@@ -1,5 +1,5 @@
 import * as Tone from 'tone';
-import * as song from './short_alive_lyrics.mid.json';
+import * as song from './still_alive_lyrics.mid.json';
 import * as quotes from './random_quotes.json';
 
 const speech = window.speechSynthesis;
@@ -141,20 +141,41 @@ function startMusic() {
             continue;
         }
 
-        const synth = new Tone.PolySynth(Tone.Synth, {
-            envelope: {
-                attack: 0.02,
-                decay: 0.1,
-                sustain: 0.3,
-                release: 1
-            }
-        }).toDestination();
+        let synth = null;
+
+        switch (track.instrument.number) {
+            case 0: // drums
+                synth = new Tone.MembraneSynth({
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1,
+                    },
+                    detune: -1200
+                }).toDestination();
+                synth.volume.value = -10;
+                break;
+            case 8: // celesta
+                synth = new Tone.MetalSynth().toDestination();
+                synth.volume.value = -10;
+            default:
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    envelope: {
+                        attack: 0.02,
+                        decay: 0.1,
+                        sustain: 0.3,
+                        release: 1
+                    }
+                }).toDestination();
+                break;
+        }
 
         const part = new Tone.Part((time, note) => {
             synth.triggerAttackRelease(
                 note.name,
                 note.duration,
-                note.time + now,
+                time,
                 note.velocity
             );
         }, track.notes);
