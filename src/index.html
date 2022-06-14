@@ -14,14 +14,21 @@
     <div class="container crt">
         <header>
             <h1 class="title">Sam's Still Alive</h1>
-
-            <button id="control" aria-label="Start Setup Button" disabled="true" data-playing="false">◉</button>
         </header>
-        <div id="content">
-            <span class="line">Press the ◉ button to begin setup.</span>
-            <span class="line">This is required because modern Browsers save you from having random crap
-                played</span>
-        </div>
+        <main>
+            <div class="controls">
+                <button id="control" aria-label="Start Setup Button" data-playing="false">◉</button>
+            </div>
+            <div class="instructions">
+                <p>Please press the ◉ Button above to begin Setup</p>
+                <p>This is necessary because modern Browsers keep Websites from playing random crap if you don't want to.</p>
+                <p>They really do you a favor. So, please, click the ◉ Button.</p>
+            </div>
+            <div class="settings hidden" id="settings">
+                <h2>Voice Select</h2>
+                <select name="voice" id="voice" disabled></select>
+            </div>
+        </main>
         <footer>
             <span>`Still Alive` by Jonathon Coulton</span>
         </footer>
