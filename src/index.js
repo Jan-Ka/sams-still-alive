@@ -29,7 +29,7 @@ speech.onvoiceschanged = () => {
     }
 }
 
-controlButton.onclick = (e) => {
+controlButton.onclick = () => {
     const stage = parseInt(controlButton.dataset.stage, 10)
 
     if (isNaN(stage)) {
@@ -122,7 +122,7 @@ function startMusic() {
                 continue;
             }
 
-            const part = new Tone.Part((time, note) => {
+            const lyricsPart = new Tone.Part((_time, note) => {
                 Tone.Draw.schedule(() => {
                     if (note.text) {
                         const utterance = new SpeechSynthesisUtterance(note.text);
@@ -135,7 +135,7 @@ function startMusic() {
                 });
             }, track.notes);
 
-            part.start();
+            lyricsPart.start();
 
             continue;
         }
@@ -194,7 +194,7 @@ function startMusic() {
                 break;
         }
 
-        const part = new Tone.Part((time, note) => {
+        const songPart = new Tone.Part((time, note) => {
             synth
                 .triggerAttackRelease(
                     note.name,
@@ -204,7 +204,7 @@ function startMusic() {
                 );
         }, track.notes);
 
-        part.start();
+        songPart.start();
     }
 
     Tone.Transport.start();
