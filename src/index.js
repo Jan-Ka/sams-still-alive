@@ -29,7 +29,7 @@ speech.onvoiceschanged = () => {
     }
 }
 
-controlButton.onclick = (e) => {
+controlButton.onclick = () => {
     const stage = parseInt(controlButton.dataset.stage, 10)
 
     if (isNaN(stage)) {
@@ -114,7 +114,6 @@ function startMusic() {
     controlButton.dataset.playing = true;
 
     Tone.Transport.bpm.value = song.header.tempos[0].bpm;
-    const now = Tone.now() + 0.5;
 
     for (const track of song.tracks) {
         // skip lyrics sounds
@@ -123,64 +122,89 @@ function startMusic() {
                 continue;
             }
 
-            const part = new Tone.Part((time, note) => {
+            const lyricsPart = new Tone.Part((_time, note) => {
                 Tone.Draw.schedule(() => {
-                    // console.log("time:", note)
                     if (note.text) {
                         const utterance = new SpeechSynthesisUtterance(note.text);
                         utterance.rate = 0.8;
                         utterance.pitch = 1.2;
+                        utterance.volume = 1.2
                         utterance.voice = selectedVoice;
                         speech.speak(utterance);
                     }
                 });
             }, track.notes);
 
-            part.start();
+            lyricsPart.start();
 
             continue;
         }
 
         let synth = null;
 
-        switch (track.instrument.number) {
-            case 0: // drums
-                synth = new Tone.MembraneSynth({
-                    envelope: {
-                        attack: 0.02,
-                        decay: 0.1,
-                        sustain: 0.3,
-                        release: 1,
-                    },
-                    detune: -1200
+        switch (track.instrument.name) {
+            case "voice oohs":
+                synth = new Tone.MonoSynth({
+                    pitch: -2,
+                    detune: -1200,
+                    volume: -10
                 }).toDestination();
-                synth.volume.value = -10;
                 break;
-            case 8: // celesta
-                synth = new Tone.MetalSynth().toDestination();
-                synth.volume.value = -10;
-            default:
+            case "orchestral harp": // Guitar 1
                 synth = new Tone.PolySynth(Tone.Synth, {
                     envelope: {
                         attack: 0.02,
                         decay: 0.1,
                         sustain: 0.3,
                         release: 1
-                    }
+                    },
+                    volume: -10
+                }).toDestination();
+                break;
+            case "acoustic guitar (steel)": // Guitar 2, Guitar 3
+                synth = new Tone.MonoSynth({
+                    pitch: -1,
+                    volume: -20
+                }).toDestination();
+                break;
+            case "electric bass (finger)": // Bass
+                synth = new Tone.MonoSynth({
+                    pitch: -5,
+                    sustain: 1.3,
+                    volume: -10
+                }).toDestination();
+                break;
+            case "standard kit": // drums 1, drums 2
+                synth = new Tone.MembraneSynth({
+                    pitch: -5,
+                    detune: -2500,
+                    pitchDecay: 0.05,
+                    volume: -20
+                }).toDestination();
+                break;
+            case "celesta":
+                synth = new Tone.MonoSynth({
+                    volume: -20
+                }).toDestination();
+                break;
+            default:
+                synth = new Tone.MonoSynth({
+                    volume: -100
                 }).toDestination();
                 break;
         }
 
-        const part = new Tone.Part((time, note) => {
-            synth.triggerAttackRelease(
-                note.name,
-                note.duration,
-                time,
-                note.velocity
-            );
+        const songPart = new Tone.Part((time, note) => {
+            synth
+                .triggerAttackRelease(
+                    note.name,
+                    note.duration,
+                    time,
+                    note.velocity
+                );
         }, track.notes);
 
-        part.start();
+        songPart.start();
     }
 
     Tone.Transport.start();
