@@ -1,6 +1,6 @@
 {
     "name": "sams-still-alive",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "Play Still Alive and have Speech Synthesis sing it too",
     "source": "src/index.html",
     "browserslist": "> 0.5%, last 2 versions, not dead",
