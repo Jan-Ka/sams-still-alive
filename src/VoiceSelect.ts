@@ -36,6 +36,10 @@ export class VoiceSelect {
     this._onenabledchange = v
   }
 
+  get onenabledchanged () {
+    return this._onenabledchange
+  }
+
   get selectedVoice () {
     return this._getSelectedVoice()
   }
@@ -51,6 +55,10 @@ export class VoiceSelect {
     if (this._elem.onchange === null) {
       this._elem.onchange = this._elemOnChange
     }
+  }
+
+  get onchange () {
+    return this._onchange
   }
 
   constructor (elem: HTMLSelectElement) {
