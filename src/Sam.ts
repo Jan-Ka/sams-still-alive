@@ -30,6 +30,10 @@ export class Sam {
     }
   }
 
+  get onvoiceschanged () {
+    return this._onvoiceschanged
+  }
+
   constructor (voice?: SpeechSynthesisVoice) {
     this._speechOnVoicesChange = this._speechOnVoicesChange.bind(this)
 
