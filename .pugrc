@@ -2,6 +2,8 @@
   "locals": {
     "app_name": "Sam's Still Alive",
     "app_description": "Experiment; have SpeechSynthesis sing a Song for you while Computer Generated Music plays in the Background",
-    "app_url": "https://jan-ka.github.io/sams-still-alive/"
+    "app_url": "https://jan-ka.github.io/sams-still-alive/",
+    "app_favicon": "/sams-still-alive/favicon.ico",
+    "app_twitter_domain": "jan-ka.github.io/sams-still-alive"
   }
 }
