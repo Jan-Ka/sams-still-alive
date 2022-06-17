@@ -6,8 +6,6 @@ export function clearAllChildNodes (parent: HTMLElement) {
 
 /**
  * @see https://www.30secondsofcode.org/js/s/slugify
- * @param str 
- * @returns 
  */
 export function slugify (str: string) {
   return str
