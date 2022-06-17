@@ -1,4 +1,3 @@
-// import * as Tone from 'tone'
 import * as midi from './still_alive_lyrics.mid.json'
 import { Draw, MembraneSynth, MonoSynth, Part, PolySynth, Synth, Transport } from 'tone'
 import { MidiJSON } from '@tonejs/midi'
@@ -15,7 +14,7 @@ export interface LyricsNote extends NoteJSON {
  */
 export class Caroline {
 
-  private _song: MidiJSON
+  private readonly _song: MidiJSON
   private _onwantstospeek: OnWantsToSpeek = () => true
 
   set onwanttospeek (v: OnWantsToSpeek | undefined) {
@@ -25,6 +24,10 @@ export class Caroline {
     }
 
     this._onwantstospeek = v
+  }
+
+  get onwanttospeek () {
+    return this._onwantstospeek
   }
 
   constructor () {
