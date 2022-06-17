@@ -4,19 +4,36 @@ export type VoiceOption = { key: string; voice: SpeechSynthesisVoice };
 
 export type OnVoiceSelectChange = (selection: SpeechSynthesisVoice) => void;
 
+export type OnVoiceSelectEnabledChange = (isDisabled: boolean) => void;
+
 export class VoiceSelect {
   private _elem: HTMLSelectElement
   private _isRebuilding = false
   private _availableOptions: VoiceOption[] = []
   private _selectedVoice = ''
   private _onchange: OnVoiceSelectChange = () => true
+  private _onenabledchange: OnVoiceSelectEnabledChange = () => true
 
   set isDisabled (v: boolean) {
-    this._elem.disabled = v;
+    console.debug('voiceSelect enabled changed to', !v)
+
+    this._elem.disabled = v
+    this._elemOnEnabledChange(v)
   }
 
   get isDisabled () {
     return this._elem.disabled;
+  }
+
+  set onenabledchanged (v: OnVoiceSelectEnabledChange | undefined) {
+    console.debug('voiceSelect onenabledchanged registered')
+
+    if (typeof v === 'undefined') {
+      this._onenabledchange = () => true
+      return
+    }
+
+    this._onenabledchange = v
   }
 
   get selectedVoice () {
@@ -24,17 +41,23 @@ export class VoiceSelect {
   }
 
   set onchange (v: OnVoiceSelectChange | undefined) {
-    if (typeof v === "undefined") {
+    if (typeof v === 'undefined') {
       this._onchange = () => true
       return
     }
 
-    this._onchange = v;
+    this._onchange = v
+
+    if (this._elem.onchange === null) {
+      this._elem.onchange = this._elemOnChange
+    }
   }
 
   constructor (elem: HTMLSelectElement) {
+    this._elemOnChange = this._elemOnChange.bind(this);
+
     this._elem = elem;
-    this._elem.onchange = this._elemOnChange
+    // this._elem.onchange = this._elemOnChange
   }
 
   updateVoices (newVoices: SpeechSynthesisVoice[]) {
@@ -59,7 +82,7 @@ export class VoiceSelect {
     }
 
     this._availableOptions.sort(function byLangThenName (a, b) {
-      const compareLang = a.voice.lang.localeCompare(b.voice.lang)
+      const compareLang: number = a.voice.lang.localeCompare(b.voice.lang)
       if (compareLang === 0) {
         return a.voice.name.localeCompare(b.voice.name)
       }
@@ -105,6 +128,11 @@ export class VoiceSelect {
     }
 
     this._onchange.call(this, selectedOption.voice)
+  }
+
+  private _elemOnEnabledChange (isDisabled: boolean) {
+    console.log('voiceSelect', isDisabled)
+    this._onenabledchange.call(this, isDisabled)
   }
 
   private _getSelectedVoice () {

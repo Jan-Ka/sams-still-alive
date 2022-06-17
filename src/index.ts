@@ -1,26 +1,23 @@
 // import * as Tone from 'tone'
-// import * as song from './still_alive_lyrics.mid.json'
-import * as quotes from './random_quotes.json'
+// import * as quotes from './random_quotes.json'
 import { ControlButton, CONTROL_BUTTON_STATES } from './ControlButton'
+import { Sam } from './Sam'
 import { VoiceSelect } from './VoiceSelect'
-
-const speech = window.speechSynthesis
 
 const controlButton = new ControlButton(document.getElementById('control') as HTMLButtonElement)
 const voiceSelect = new VoiceSelect(document.getElementById('voice') as HTMLSelectElement)
 
+const sam = new Sam()
+
 const settings = document.getElementById('settings') as HTMLDivElement
 const instructions = document.getElementById('instructions') as HTMLDivElement
 const terminal = document.getElementById('terminal') as HTMLDivElement
+const testVoiceButton = document.getElementById('test') as HTMLButtonElement
 
 let playing = false;
 
 setControlIcon()
 controlButton.focus()
-
-speech.onvoiceschanged = () => {
-  voiceSelect.updateVoices(speech.getVoices())
-}
 
 controlButton.onclick = () => {
   const stage = controlButton.stage
@@ -49,15 +46,28 @@ controlButton.onclick = () => {
 function playSetup () {
   settings.classList.remove('hidden')
 
+  voiceSelect.onenabledchanged = (isDisabled) => {
+    console.debug('index', isDisabled)
+    testVoiceButton.disabled = isDisabled;
+  }
+
   voiceSelect.onchange = (selectedVoice) => {
     console.debug(`voice changed to ${selectedVoice.name}`)
+    sam.changeVoice(selectedVoice)
 
-    const randomQuoteIndex = Math.floor(Math.random() * quotes.length)
-
-    const utterance = new SpeechSynthesisUtterance(quotes[randomQuoteIndex])
-    utterance.voice = selectedVoice
-    speech.speak(utterance)
+    sam.sayRandom()
   }
+
+  sam.onvoiceschanged = (voices) => {
+    console.debug('index voices changed')
+    voiceSelect.updateVoices(voices)
+  }
+
+  testVoiceButton.onclick = () => {
+    sam.sayRandom()
+  }
+
+  sam.updateVoices();
 
   instructions.classList.add('hidden')
 }
