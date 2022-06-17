@@ -47,7 +47,7 @@ export class Sam {
     }
   }
 
-  changeVoice(newVoice: SpeechSynthesisVoice) {
+  changeVoice (newVoice: SpeechSynthesisVoice) {
     this._voice = newVoice
   }
 
@@ -57,9 +57,22 @@ export class Sam {
     this._onvoiceschanged.call(this, this._voices);
   }
 
-  // saySentence (sentence: string) {
+  saySentence (sentence: string) {
+    if (this._broken) {
+      console.warn('sam can\'t say something, they are currently broken')
+      return
+    }
 
-  // }
+    if (sentence.length <= 0) {
+      console.debug('sentence was empty')
+      return
+    }
+
+    const utterance = new SpeechSynthesisUtterance()
+    utterance.text = sentence
+    utterance.voice = this._voice
+    this._speech.speak(utterance)
+  }
 
   sayRandom () {
     if (this._broken) {

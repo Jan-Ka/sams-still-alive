@@ -1,5 +1,4 @@
-// import * as Tone from 'tone'
-// import * as quotes from './random_quotes.json'
+import { Caroline } from './Caroline'
 import { ControlButton, CONTROL_BUTTON_STATES } from './ControlButton'
 import { Sam } from './Sam'
 import { VoiceSelect } from './VoiceSelect'
@@ -8,6 +7,7 @@ const controlButton = new ControlButton(document.getElementById('control') as HT
 const voiceSelect = new VoiceSelect(document.getElementById('voice') as HTMLSelectElement)
 
 const sam = new Sam()
+const caroline = new Caroline()
 
 const settings = document.getElementById('settings') as HTMLDivElement
 const instructions = document.getElementById('instructions') as HTMLDivElement
@@ -67,7 +67,11 @@ function playSetup () {
     sam.sayRandom()
   }
 
-  sam.updateVoices();
+  sam.updateVoices()
+
+  caroline.onwanttospeek = (note) => {
+    sam.saySentence(note.text)
+  }
 
   instructions.classList.add('hidden')
 }
@@ -76,115 +80,16 @@ function startMusic () {
   settings.classList.add('hidden')
   terminal.classList.remove('hidden')
 
+  caroline.startPlaying()
   playing = true
-
-  // Tone.Transport.bpm.value = song.header.tempos[0].bpm
-
-  // const selectedVoice = voiceSelect.selectedVoice
-  // const hasVoice = typeof selectedVoice !== "undefined";
-
-  // for (const track of song.tracks) {
-  //   // skip lyrics sounds
-  //   if (track.name === 'lyrics' && hasVoice) {
-  //     if (track.notes.length <= 0) {
-  //       continue
-  //     }
-
-  //     const lyricsPart = new Tone.Part((_time, note) => {
-  //       Tone.Draw.schedule(() => {
-  //         if (note.text) {
-  //           const utterance = new SpeechSynthesisUtterance(note.text)
-  //           utterance.rate = 0.8
-  //           utterance.pitch = 1.2
-  //           utterance.volume = 1.2         
-  //           utterance.voice = selectedVoice.voice
-  //           speech.speak(utterance)
-  //         }
-  //       })
-  //     }, track.notes)
-
-  //     lyricsPart.start()
-
-  //     continue
-  //   }
-
-  //   let synth = null
-
-  //   switch (track.instrument.name) {
-  //     case 'voice oohs':
-  //       synth = new Tone.MonoSynth({
-  //         pitch: -2,
-  //         detune: -1200,
-  //         volume: -10
-  //       }).toDestination()
-  //       break
-  //     case 'orchestral harp': // Guitar 1
-  //       synth = new Tone.PolySynth(Tone.Synth, {
-  //         envelope: {
-  //           attack: 0.02,
-  //           decay: 0.1,
-  //           sustain: 0.3,
-  //           release: 1
-  //         },
-  //         volume: -10
-  //       }).toDestination()
-  //       break
-  //     case 'acoustic guitar (steel)': // Guitar 2, Guitar 3
-  //       synth = new Tone.MonoSynth({
-  //         pitch: -1,
-  //         volume: -20
-  //       }).toDestination()
-  //       break
-  //     case 'electric bass (finger)': // Bass
-  //       synth = new Tone.MonoSynth({
-  //         pitch: -5,
-  //         sustain: 1.3,
-  //         volume: -10
-  //       }).toDestination()
-  //       break
-  //     case 'standard kit': // drums 1, drums 2
-  //       synth = new Tone.MembraneSynth({
-  //         pitch: -5,
-  //         detune: -2500,
-  //         pitchDecay: 0.05,
-  //         volume: -20
-  //       }).toDestination()
-  //       break
-  //     case 'celesta':
-  //       synth = new Tone.MonoSynth({
-  //         volume: -20
-  //       }).toDestination()
-  //       break
-  //     default:
-  //       synth = new Tone.MonoSynth({
-  //         volume: -100
-  //       }).toDestination()
-  //       break
-  //   }
-
-  //   const songPart = new Tone.Part((time, note) => {
-  //     synth
-  //       .triggerAttackRelease(
-  //         note.name,
-  //         note.duration,
-  //         time,
-  //         note.velocity
-  //       )
-  //   }, track.notes)
-
-  //   songPart.start()
-  // }
-
-  // Tone.Transport.start()
 }
 
 function stopMusic () {
   settings.classList.remove('hidden')
   terminal.classList.add('hidden')
 
+  caroline.stopPlaying()
   playing = false
-  // Tone.Transport.stop()
-  // Tone.Transport.cancel(0)
 }
 
 function setControlIcon () {
