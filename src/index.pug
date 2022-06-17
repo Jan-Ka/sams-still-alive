@@ -1,0 +1,26 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(http-equiv="X-UA-Compatible", content="IE=edge")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    include includes/header_meta.pug
+    title #{ app_name }
+    link(rel="stylesheet", href="index.scss")
+    link(rel="stylesheet", href="crt.scss")
+    link(rel="shortcut icon", href="/favicon.ico", type="image/x-icon")
+  body 
+    .container.crt
+      include includes/header.pug
+      main
+        .controls
+          button#control(
+            aria-label="Control Button",
+            data-stage="0",
+            data-playing="false"
+          ) ◉
+        include includes/instructions.pug
+        include includes/settings.pug
+        include includes/terminal.pug
+      include includes/footer.pug
+    script(type="module", src="index.ts") 

@@ -1,0 +1,14 @@
+#settings.settings.hidden
+  h2 Voice Select
+  p ERROR: GLaDOS voice was not found.
+  p Please select one of the provided replacement voices.
+  p Being content with the default selection is permissible.
+  .row
+    select#voice(name="voice", disabled)
+    button#test(name="test", aria-label="Test Voice", disabled) 
+      <!-- Icon  from https://www.svgrepo.com/svg/299097/typing-talk ; CC0 by SVG Repo -->
+      include testbutton.pug
+  p 
+    | If you are happy with
+    span.strike your
+    | the selection. Press the ▷ button.
