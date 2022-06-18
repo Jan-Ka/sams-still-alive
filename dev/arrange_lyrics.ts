@@ -31,9 +31,7 @@ async function getMidi () {
 async function getLyrics (): Promise<string[]> {
   const file = await readFile(lyricsPath, 'utf-8')
 
-  const lyrics = JSON.parse(file)
-
-  return lyrics
+  return JSON.parse(file)
 }
 
 async function processMidi (): Promise<void> {
