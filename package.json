@@ -1,6 +1,6 @@
 {
   "name": "sams-still-alive",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Play Still Alive and have Speech Synthesis sing it too",
   "source": "src/index.pug",
   "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -10,7 +10,8 @@
     "clean": "rm -rf dist",
     "clean:full": "rm -rf dist && rm -rf .parcel-cache",
     "predeploy": "npm run clean && npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "updateMidi": "npx ts-node ./dev/arrange_lyrics.ts"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "@parcel/transformer-sass": "^2.6.0",
     "@prettier/plugin-pug": "^2.1.0",
     "@tonejs/midi": "^2.0.28",
+    "@types/node": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.28.0",
     "@typescript-eslint/parser": "^5.28.0",
     "eslint": "^8.17.0",

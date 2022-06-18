@@ -1,20 +1,16 @@
-import * as midi from './still_alive_lyrics.mid.json'
+import * as midi from './still_alive_lyrics.midi.json'
 import { Draw, MembraneSynth, MonoSynth, Part, PolySynth, Synth, Transport } from 'tone'
-import { MidiJSON } from '@tonejs/midi'
-import { NoteJSON } from '@tonejs/midi/dist/Note'
+import { INoteLyricsJSON } from './INoteLyricsJSON'
+import { IMidiLyricsJSON } from './IMidiLyricsJSON'
 
-export type OnWantsToSpeek = (note: LyricsNote) => void
-
-export interface LyricsNote extends NoteJSON {
-  text: string
-}
+export type OnWantsToSpeek = (note: INoteLyricsJSON) => void
 
 /**
  * Caroline likes to sing songs
  */
 export class Caroline {
 
-  private readonly _song: MidiJSON
+  private readonly _song: IMidiLyricsJSON
   private _onwantstospeek: OnWantsToSpeek = () => true
 
   set onwanttospeek (v: OnWantsToSpeek | undefined) {
@@ -31,7 +27,7 @@ export class Caroline {
   }
 
   constructor () {
-    this._song = midi as MidiJSON
+    this._song = midi as IMidiLyricsJSON
   }
 
   startPlaying () {
@@ -46,6 +42,7 @@ export class Caroline {
 
         const lyricsPart = new Part((time, note) => {
           if (this._isLyricsNote(note)) {
+            console.log(note)
             Draw.schedule(() => {
               this._startUtterance(note);
             }, time)
@@ -143,11 +140,11 @@ export class Caroline {
     }
   }
 
-  private _startUtterance (note: LyricsNote) {
+  private _startUtterance (note: INoteLyricsJSON) {
     this._onwantstospeek.call(this, note)
   }
 
-  private _isLyricsNote (x: unknown): x is LyricsNote {
+  private _isLyricsNote (x: unknown): x is INoteLyricsJSON {
     return Object.prototype.hasOwnProperty.call(x, 'text')
   }
 }
