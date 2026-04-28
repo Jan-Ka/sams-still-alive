@@ -10,7 +10,6 @@ export class Sam {
   private _voice: SpeechSynthesisVoice | null = null
   private _broken = false // true if speechSynthesis can't be accessed
   private _onvoiceschanged: OnVoicesChanged = () => true
-  private _voices: SpeechSynthesisVoice[] = []
 
   set onvoiceschanged (v: OnVoicesChanged | undefined) {
     if (this._broken) {
@@ -56,9 +55,7 @@ export class Sam {
   }
 
   updateVoices () {
-    this._voices = this._speech.getVoices();
-
-    this._onvoiceschanged.call(this, this._voices);
+    this._onvoiceschanged.call(this, this._speech.getVoices());
   }
 
   saySentence (sentence: string) {
