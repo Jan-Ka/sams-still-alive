@@ -7,6 +7,7 @@
   <span>Sequenced by Andrew Coccimiglio</span>
   <span>Adapted by Jan Kaltenecker</span>
   <span>
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
     <a href={appConfig.repoUrl} target="_self">v{appVersion} Code on GitHub</a>
   </span>
 </footer>

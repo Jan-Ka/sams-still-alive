@@ -28,6 +28,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.5.2",
     "@commitlint/config-conventional": "^20.5.0",
+    "@eslint/js": "^10.0.1",
     "@sveltejs/adapter-static": "^3.0.10",
     "@sveltejs/kit": "^2.58.0",
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
@@ -35,6 +36,7 @@
     "@types/node": "^25.6.0",
     "eslint": "^10.2.1",
     "eslint-plugin-svelte": "^3.17.1",
+    "globals": "^17.5.0",
     "husky": "^9.1.7",
     "playwright": "^1.59.1",
     "sass-embedded": "^1.99.0",
