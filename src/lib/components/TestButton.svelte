@@ -1,0 +1,57 @@
+<script lang="ts">
+  interface Props {
+    disabled?: boolean;
+    onclick?: () => void;
+  }
+
+  let { disabled = false, onclick }: Props = $props();
+</script>
+
+<button id="test" name="test" aria-label="Test Voice" {disabled} {onclick}>
+  <!-- Icon from https://www.svgrepo.com/svg/299097/typing-talk ; CC0 by SVG Repo -->
+  <svg
+    aria-hidden="true"
+    focusable="false"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 512 512"
+    xml:space="preserve"
+  >
+    <path
+      d="M100 189h67v67h-67zM223 189h66v67h-66zM345 189h67v67h-67zM33 301h34v44H33zM67 345h33v33H67zM0 145h33v156H0zM67 100H33v45h34v-45h33V67H67zM100 33h67v34h-67zM412 67V33h-67V0H167v33h178v34h67v33h33V67zM445 100h34v45h-34zM479 145h33v189h-33zM445 334h34v44h-34zM100 445H67v67h200v-33H100zM267 445h78v34h-78zM345 412h67v33h-67zM100 378v67h34v-33h33v-34zM412 378h33v34h-33z"
+    />
+  </svg>
+</button>
+
+<style lang="scss">
+  @use '../styles/vars' as *;
+
+  #test {
+    height: 2rem;
+    width: 2rem;
+
+    @include styled-border;
+
+    &:hover {
+      background: $amber;
+      color: $background;
+
+      svg path {
+        fill: $background;
+      }
+    }
+
+    &:disabled,
+    &:disabled:hover {
+      @include disabled-colors;
+      background: $background;
+
+      svg path {
+        fill: $disabled;
+      }
+    }
+
+    svg path {
+      fill: $amber;
+    }
+  }
+</style>
