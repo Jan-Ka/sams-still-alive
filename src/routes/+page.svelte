@@ -27,6 +27,9 @@
   let instructionsVisible = $derived(stage === CONTROL_BUTTON_STATES.SETUP);
   let settingsVisible = $derived(stage === CONTROL_BUTTON_STATES.PLAY);
   let terminalVisible = $derived(stage === CONTROL_BUTTON_STATES.STOP);
+  let controlDisabled = $derived(
+    stage === CONTROL_BUTTON_STATES.PLAY && preloadState !== 'ready'
+  );
 
   onMount(() => {
     if (!browser) return;
@@ -96,7 +99,12 @@
   <Header />
   <main>
     <div class="controls">
-      <ControlButton {stage} bind:ref={controlRef} onclick={handleControl} />
+      <ControlButton
+        {stage}
+        bind:ref={controlRef}
+        disabled={controlDisabled}
+        onclick={handleControl}
+      />
     </div>
     <Instructions visible={instructionsVisible} />
     <Settings

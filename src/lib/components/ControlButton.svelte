@@ -13,9 +13,10 @@
     stage: ControlStage;
     onclick?: (event: MouseEvent) => void;
     ref?: HTMLButtonElement;
+    disabled?: boolean;
   }
 
-  let { stage, onclick, ref = $bindable() }: Props = $props();
+  let { stage, onclick, ref = $bindable(), disabled = false }: Props = $props();
 
   const icons: Record<ControlStage, string> = {
     [CONTROL_BUTTON_STATES.SETUP]: '◉',
@@ -30,6 +31,7 @@
   aria-label="Control Button"
   data-stage={stage}
   data-playing={stage === CONTROL_BUTTON_STATES.STOP}
+  {disabled}
   {onclick}
 >
   {icons[stage]}
