@@ -6,16 +6,14 @@
   <h1 class="title">{appConfig.name}</h1>
 </header>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   header {
     height: 2rem;
 
     flex: 0 1 auto;
 
     padding: 1rem;
-    border: 1px dashed $amber;
+    border: 1px dashed var(--amber);
     vertical-align: baseline;
     font-size: 2rem;
     line-height: 2rem;

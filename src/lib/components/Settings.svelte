@@ -33,7 +33,7 @@
   </p>
 </div>
 
-<style lang="scss">
+<style>
   #settings {
     .row {
       display: flex;

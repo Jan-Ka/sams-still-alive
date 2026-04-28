@@ -12,16 +12,14 @@
   </span>
 </footer>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   footer {
     min-height: 2rem;
 
     flex: 0 1 1rem;
 
     padding: 0.25rem;
-    border: 1px dashed $amber;
+    border: 1px dashed var(--amber);
     vertical-align: baseline;
     line-height: 1rem;
 
@@ -30,7 +28,7 @@
     justify-content: space-between;
 
     a {
-      color: $amber;
+      color: var(--amber);
     }
   }
 </style>

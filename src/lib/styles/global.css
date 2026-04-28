@@ -1,10 +1,15 @@
-@use 'vars' as *;
+:root {
+  --font-family: 'Courier New', monospace;
+  --amber: #ffbb00;
+  --disabled: grey;
+  --background: #282828;
+}
 
 html,
 body {
-  color: $amber;
-  background: $background;
-  font-family: $font-family;
+  color: var(--amber);
+  background: var(--background);
+  font-family: var(--font-family);
   font-size: 16px;
 
   height: 100%;
@@ -25,7 +30,7 @@ body {
   text-decoration: line-through;
 }
 
-// crt effect from http://aleclownes.com/2017/02/01/crt-display.html
+/* crt effect from http://aleclownes.com/2017/02/01/crt-display.html */
 @keyframes flicker {
   0% { opacity: 0.27861; }
   5% { opacity: 0.34769; }

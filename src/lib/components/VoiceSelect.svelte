@@ -69,21 +69,21 @@
   {/if}
 </select>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   #voice {
-    color: $amber;
+    color: var(--amber);
 
     height: 2rem;
-    font-family: $font-family;
+    font-family: var(--font-family);
     line-height: 2rem;
     flex-grow: 1;
 
-    @include styled-border;
+    border: 1px solid var(--amber);
+    border-radius: 4px;
+    background: var(--background);
 
     &:focus {
-      outline: $amber;
+      outline: var(--amber);
     }
   }
 </style>
