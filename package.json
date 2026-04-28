@@ -12,6 +12,7 @@
     "lint": "eslint .",
     "updateMidi": "tsx ./dev/arrange_lyrics.ts",
     "screenshot": "tsx ./dev/screenshot.ts",
+    "smoketest": "tsx ./dev/smoketest.ts",
     "prepare": "svelte-kit sync && husky"
   },
   "repository": {

@@ -129,6 +129,11 @@ tasks:
     cmds:
       - pnpm run screenshot
 
+  smoketest:
+    desc: Drive the SETUP → PLAY → STOP flow in headless Chromium against a running dev server
+    cmds:
+      - pnpm run smoketest {{.CLI_ARGS}}
+
   # ── Release ──────────────────────────────────────────────────────
   # Tagging triggers .github/workflows/release.yml which builds and
   # deploys to gh-pages. Bump package.json version manually before tagging.
