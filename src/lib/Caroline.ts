@@ -2,6 +2,7 @@ import type { INoteLyricsJSON } from './INoteLyricsJSON'
 import type { IMidiLyricsJSON } from './IMidiLyricsJSON'
 
 type ToneModule = typeof import('tone')
+type Disposable = { dispose: () => unknown }
 
 type OnWantsToSpeek = (note: INoteLyricsJSON) => void
 
@@ -14,6 +15,8 @@ export class Caroline {
   private _tone: ToneModule | null = null
   private _preloadPromise: Promise<void> | null = null
   private _onwantstospeek: OnWantsToSpeek = () => true
+  private _parts: Disposable[] = []
+  private _synths: Disposable[] = []
 
   set onwanttospeek (v: OnWantsToSpeek | undefined) {
     if (typeof v === 'undefined') {
@@ -48,7 +51,11 @@ export class Caroline {
       throw new Error('Caroline failed to preload')
     }
 
-    const { Transport, Part, Draw } = this._tone
+    this._disposeAll()
+
+    const { Transport, Part, Draw, start } = this._tone
+
+    await start()
 
     Transport.bpm.value = this._song.header.tempos[0].bpm
 
@@ -68,11 +75,13 @@ export class Caroline {
         }, track.notes)
 
         lyricsPart.start()
+        this._parts.push(lyricsPart)
 
         continue
       }
 
       const synth = this._getSynthForNote(track.instrument.name);
+      this._synths.push(synth)
 
       const songPart = new Part((time, note) => {
         try {
@@ -90,6 +99,7 @@ export class Caroline {
       }, track.notes)
 
       songPart.start();
+      this._parts.push(songPart)
     }
 
     Transport.start()
@@ -100,6 +110,14 @@ export class Caroline {
     const { Transport } = this._tone
     Transport.stop()
     Transport.cancel(0)
+    this._disposeAll()
+  }
+
+  private _disposeAll () {
+    for (const part of this._parts) part.dispose()
+    for (const synth of this._synths) synth.dispose()
+    this._parts = []
+    this._synths = []
   }
 
   private _getSynthForNote (instrument: string) {
