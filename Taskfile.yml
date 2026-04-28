@@ -1,0 +1,190 @@
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  # ── Prerequisites ────────────────────────────────────────────────
+
+  check:prereqs:
+    desc: Verify required development tools are installed
+    silent: true
+    cmds:
+      - |
+        MISSING=0
+        check() {
+          if command -v "$1" >/dev/null 2>&1; then
+            echo "✓ $1 $(eval "$2")"
+          else
+            echo "✗ $1 is not installed ($3)"
+            MISSING=1
+          fi
+        }
+        check node "node --version" "brew install node"
+        check pnpm "pnpm --version" "brew install pnpm"
+        check op   "op --version"   "brew install 1password-cli"
+        check gh   "gh --version | head -n1" "brew install gh"
+
+        [ "$MISSING" -ne 0 ] && echo "" && echo "Install missing tools and re-run." && exit 1
+        echo "" && echo "All prerequisites satisfied."
+
+  # ── Setup ────────────────────────────────────────────────────────
+
+  setup:
+    desc: Bootstrap project from a fresh clone
+    cmds:
+      - task: check:prereqs
+      - task: setup:secrets
+      - task: setup:deps
+      - echo ""
+      - echo "Setup complete. Run 'task dev' to start the dev server."
+
+  setup:deps:
+    desc: Install Node dependencies via pnpm
+    silent: true
+    cmds:
+      - echo "Installing dependencies..."
+      - pnpm install
+      - echo "✓ Dependencies installed"
+
+  setup:secrets:
+    desc: Materialize 1Password secrets into .env
+    silent: true
+    cmds:
+      - |
+        if [ ! -f .env.1password ]; then
+          echo "⏭ .env.1password not found, skipping (see .env.example)"
+          exit 0
+        fi
+        if [ -f .env ]; then
+          echo "⏭ .env already exists, skipping (delete to re-materialize)"
+          exit 0
+        fi
+        if ! op account list >/dev/null 2>&1; then
+          echo "✗ Not signed in to 1Password CLI. Run: eval \$(op signin)"
+          exit 1
+        fi
+        TMPENV=$(mktemp)
+        trap 'rm -f "$TMPENV"' EXIT
+        while IFS= read -r line || [ -n "$line" ]; do
+          case "$line" in ""|\#*) continue ;; esac
+          KEY="${line%%=*}"; VALUE="${line#*=}"; VALUE="${VALUE%\"}"; VALUE="${VALUE#\"}"
+          case "$VALUE" in
+            op://*) RESOLVED=$(op read "$VALUE" 2>/dev/null) || { echo "✗ Failed to resolve $KEY"; exit 1; }
+                    echo "${KEY}=${RESOLVED}" >> "$TMPENV"; echo "✓ $KEY (1password)" ;;
+            *)      echo "${KEY}=${VALUE}" >> "$TMPENV"; echo "✓ $KEY (literal)" ;;
+          esac
+        done < .env.1password
+        mv "$TMPENV" .env; trap - EXIT
+        echo "Secrets materialized to .env"
+
+  # ── Develop / Build ──────────────────────────────────────────────
+
+  dev:
+    desc: Start the Vite dev server
+    cmds:
+      - pnpm dev
+
+  build:
+    desc: Production build (static, gh-pages-ready)
+    cmds:
+      - pnpm build
+
+  preview:
+    desc: Preview the production build locally
+    cmds:
+      - pnpm preview
+
+  clean:
+    desc: Remove build artifacts and SvelteKit caches
+    cmds:
+      - rm -rf build .svelte-kit
+
+  # ── Quality ──────────────────────────────────────────────────────
+
+  check:
+    desc: Run svelte-check (TS + Svelte type-check)
+    cmds:
+      - pnpm check
+
+  lint:
+    desc: Run ESLint
+    cmds:
+      - pnpm lint
+
+  # ── MIDI/Lyrics regeneration ────────────────────────────────────
+
+  updateMidi:
+    desc: Regenerate src/lib/still_alive_lyrics.midi.json from dev/ inputs
+    cmds:
+      - pnpm run updateMidi
+
+  screenshot:
+    desc: Regenerate doc/app_screenshot.png from a fresh production build
+    deps: [build]
+    cmds:
+      - pnpm run screenshot
+
+  # ── Release ──────────────────────────────────────────────────────
+  # Tagging triggers .github/workflows/release.yml which builds and
+  # deploys to gh-pages. Bump package.json version manually before tagging.
+
+  release:patch:
+    desc: Tag a patch release (v0.1.0 → v0.1.1)
+    cmds:
+      - task: release
+        vars:
+          BUMP: patch
+
+  release:minor:
+    desc: Tag a minor release (v0.1.0 → v0.2.0)
+    cmds:
+      - task: release
+        vars:
+          BUMP: minor
+
+  release:major:
+    desc: Tag a major release (v0.1.0 → v1.0.0)
+    cmds:
+      - task: release
+        vars:
+          BUMP: major
+
+  release:
+    internal: true
+    vars:
+      LATEST_TAG:
+        sh: git describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || echo "v0.0.0"
+      MAJOR:
+        sh: echo "{{.LATEST_TAG}}" | sed 's/^v//' | cut -d. -f1
+      MINOR:
+        sh: echo "{{.LATEST_TAG}}" | sed 's/^v//' | cut -d. -f2
+      PATCH:
+        sh: echo "{{.LATEST_TAG}}" | sed 's/^v//' | cut -d. -f3
+      NEXT_TAG:
+        sh: |
+          case "{{.BUMP}}" in
+            major) echo "v$(({{.MAJOR}}+1)).0.0" ;;
+            minor) echo "v{{.MAJOR}}.$(({{.MINOR}}+1)).0" ;;
+            patch) echo "v{{.MAJOR}}.{{.MINOR}}.$(({{.PATCH}}+1))" ;;
+          esac
+      NEXT_VERSION:
+        sh: echo "{{.NEXT_TAG}}" | sed 's/^v//'
+    preconditions:
+      - sh: test "$(git branch --show-current)" = "main"
+        msg: "Must be on main branch to release"
+      - sh: test -z "$(git status --porcelain)"
+        msg: "Working directory must be clean"
+      - sh: git diff --quiet HEAD origin/main
+        msg: "Local main must be up to date with origin"
+      - sh: "grep -q '\"version\": \"{{.NEXT_VERSION}}\"' package.json"
+        msg: 'package.json version must be "{{.NEXT_VERSION}}" before tagging'
+    cmds:
+      - echo "{{.LATEST_TAG}} → {{.NEXT_TAG}}"
+      - git tag "{{.NEXT_TAG}}"
+      - git push origin "{{.NEXT_TAG}}"
+      - echo "Tagged and pushed {{.NEXT_TAG}}. CI will build and deploy to gh-pages."
