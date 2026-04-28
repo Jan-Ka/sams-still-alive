@@ -18,12 +18,12 @@
   <p>ERROR: GLaDOS voice was not found.</p>
   <p>Please select one of the provided replacement voices.</p>
   <p>Being content with the default selection is permissible.</p>
-  <div class="row">
-    <VoiceSelect
-      {voices}
-      onchange={onvoicechange}
-      onenabledchanged={(isDisabled) => (testDisabled = isDisabled)}
-    />
+  <VoiceSelect
+    {voices}
+    onchange={onvoicechange}
+    onenabledchanged={(isDisabled) => (testDisabled = isDisabled)}
+  />
+  <div class="test-row">
     <TestButton disabled={testDisabled} onclick={ontest} />
   </div>
   <p>
@@ -35,13 +35,13 @@
 
 <style>
   #settings {
-    .row {
+    display: flex;
+    flex-flow: column;
+    gap: 0.75rem;
+
+    .test-row {
       display: flex;
-      flex-flow: row wrap;
-
-      gap: 1rem;
-
-      justify-content: space-between;
+      justify-content: flex-end;
     }
   }
 </style>
