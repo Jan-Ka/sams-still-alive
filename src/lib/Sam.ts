@@ -1,6 +1,6 @@
 import quotes from './random_quotes.json'
 
-export type OnVoicesChanged = (voices: SpeechSynthesisVoice[]) => void;
+type OnVoicesChanged = (voices: SpeechSynthesisVoice[]) => void;
 
 /**
  * Sam talks through speechSynthesis

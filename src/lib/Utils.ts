@@ -1,9 +1,3 @@
-export function clearAllChildNodes (parent: HTMLElement) {
-  while (parent.firstChild) {
-    parent.removeChild(parent.firstChild)
-  }
-}
-
 /**
  * @see https://www.30secondsofcode.org/js/s/slugify
  */

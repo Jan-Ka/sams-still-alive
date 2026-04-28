@@ -3,7 +3,7 @@ import type { IMidiLyricsJSON } from './IMidiLyricsJSON'
 
 type ToneModule = typeof import('tone')
 
-export type OnWantsToSpeek = (note: INoteLyricsJSON) => void
+type OnWantsToSpeek = (note: INoteLyricsJSON) => void
 
 /**
  * Caroline likes to sing songs
