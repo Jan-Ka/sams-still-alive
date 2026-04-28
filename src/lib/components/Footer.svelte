@@ -3,7 +3,7 @@
 </script>
 
 <footer>
-  <span>`Still Alive` by Jonathon Coulton</span>
+  <span>`Still Alive` by Jonathan Coulton</span>
   <span>Sequenced by Andrew Coccimiglio</span>
   <span>Adapted by Jan Kaltenecker</span>
   <span>

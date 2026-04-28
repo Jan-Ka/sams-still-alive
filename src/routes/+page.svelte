@@ -67,8 +67,13 @@
         startPreload();
         break;
       case CONTROL_BUTTON_STATES.PLAY:
-        await caroline?.startPlaying();
-        stage = CONTROL_BUTTON_STATES.STOP;
+        try {
+          await caroline?.startPlaying();
+          stage = CONTROL_BUTTON_STATES.STOP;
+        } catch (err) {
+          console.error('Caroline.startPlaying failed', err);
+          preloadState = 'error';
+        }
         break;
       case CONTROL_BUTTON_STATES.STOP:
         caroline?.stopPlaying();

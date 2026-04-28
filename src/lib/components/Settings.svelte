@@ -28,7 +28,7 @@
   </div>
   <p>
     If you are happy with
-    <span class="strike">your</span>
+    <span class="strike" aria-hidden="true">your</span>
     the selection. Press the ▷ button.
   </p>
 </div>
