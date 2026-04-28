@@ -1,13 +1,14 @@
 import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { readFile, writeFile } from 'node:fs/promises'
 import { Midi } from '@tonejs/midi'
-import { IMidiLyricsJSON, ITrackLyricsJSON } from '../src/IMidiLyricsJSON'
+import type { IMidiLyricsJSON, ITrackLyricsJSON } from '../src/lib/IMidiLyricsJSON'
 
-const fileDir = dirname(__filename);
+const fileDir = dirname(fileURLToPath(import.meta.url));
 
 const midiFilePath = join(fileDir, 'still_alive_lyrics.midi')
 const lyricsPath = join(fileDir, 'still_alive_lyrics.json')
-const outputPath = join(fileDir, '..', 'src', 'still_alive_lyrics.midi.json')
+const outputPath = join(fileDir, '..', 'src', 'lib', 'still_alive_lyrics.midi.json')
 
 
 console.debug(`load midi file from ${midiFilePath}`)

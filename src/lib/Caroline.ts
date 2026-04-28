@@ -1,7 +1,7 @@
-import * as midi from './still_alive_lyrics.midi.json'
-import { Draw, MembraneSynth, MonoSynth, Part, PolySynth, Synth, Transport } from 'tone'
-import { INoteLyricsJSON } from './INoteLyricsJSON'
-import { IMidiLyricsJSON } from './IMidiLyricsJSON'
+import type { INoteLyricsJSON } from './INoteLyricsJSON'
+import type { IMidiLyricsJSON } from './IMidiLyricsJSON'
+
+type ToneModule = typeof import('tone')
 
 export type OnWantsToSpeek = (note: INoteLyricsJSON) => void
 
@@ -10,7 +10,9 @@ export type OnWantsToSpeek = (note: INoteLyricsJSON) => void
  */
 export class Caroline {
 
-  private readonly _song: IMidiLyricsJSON
+  private _song: IMidiLyricsJSON | null = null
+  private _tone: ToneModule | null = null
+  private _preloadPromise: Promise<void> | null = null
   private _onwantstospeek: OnWantsToSpeek = () => true
 
   set onwanttospeek (v: OnWantsToSpeek | undefined) {
@@ -26,11 +28,28 @@ export class Caroline {
     return this._onwantstospeek
   }
 
-  constructor () {
-    this._song = midi as IMidiLyricsJSON
+  preload (): Promise<void> {
+    if (!this._preloadPromise) {
+      this._preloadPromise = (async () => {
+        const [toneModule, songModule] = await Promise.all([
+          import('tone'),
+          import('./still_alive_lyrics.midi.json')
+        ])
+        this._tone = toneModule
+        this._song = songModule.default as IMidiLyricsJSON
+      })()
+    }
+    return this._preloadPromise
   }
 
-  startPlaying () {
+  async startPlaying () {
+    await this.preload()
+    if (!this._tone || !this._song) {
+      throw new Error('Caroline failed to preload')
+    }
+
+    const { Transport, Part, Draw } = this._tone
+
     Transport.bpm.value = this._song.header.tempos[0].bpm
 
     for (const track of this._song.tracks) {
@@ -42,22 +61,10 @@ export class Caroline {
 
         const lyricsPart = new Part((time, note) => {
           if (this._isLyricsNote(note)) {
-            console.log(note)
             Draw.schedule(() => {
               this._startUtterance(note);
             }, time)
           }
-
-          // Draw.schedule(() => {
-          //   if (note.text) {
-          //     const utterance = new SpeechSynthesisUtterance(note.text)
-          //     utterance.rate = 0.8
-          //     utterance.pitch = 1.2
-          //     utterance.volume = 1.2
-          //     utterance.voice = selectedVoice.voice
-          //     speech.speak(utterance)
-          //   }
-          // })
         }, track.notes)
 
         lyricsPart.start()
@@ -89,15 +96,21 @@ export class Caroline {
   }
 
   stopPlaying () {
+    if (!this._tone) return
+    const { Transport } = this._tone
     Transport.stop()
     Transport.cancel(0)
   }
 
   private _getSynthForNote (instrument: string) {
+    if (!this._tone) {
+      throw new Error('Tone module not loaded')
+    }
+    const { MonoSynth, PolySynth, Synth, MembraneSynth } = this._tone
+
     switch (instrument) {
       case 'voice oohs':
         return new MonoSynth({
-          // pitch: -2,
           detune: -1200,
           volume: -20
         }).toDestination();
@@ -113,18 +126,14 @@ export class Caroline {
         }).toDestination();
       case 'acoustic guitar (steel)': // Guitar 2, Guitar 3
         return new MonoSynth({
-          // pitch: -1,
           volume: -20
         }).toDestination();
       case 'electric bass (finger)': // Bass
         return new MonoSynth({
-          // pitch: -5,
-          // sustain: 1.3,
           volume: -10
         }).toDestination();
       case 'standard kit': // drums 1, drums 2
         return new MembraneSynth({
-          // pitch: -5,
           detune: -2500,
           pitchDecay: 0.05,
           volume: -20
