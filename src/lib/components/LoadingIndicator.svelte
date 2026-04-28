@@ -10,12 +10,10 @@
   <span class="text">{label}</span><span class="dots" aria-hidden="true"></span>
 </div>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   .loading {
-    color: $amber;
-    font-family: $font-family;
+    color: var(--amber);
+    font-family: var(--font-family);
     font-size: 1rem;
     letter-spacing: 0.1em;
     text-align: center;

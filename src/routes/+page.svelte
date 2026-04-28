@@ -110,9 +110,7 @@
   <Footer />
 </div>
 
-<style lang="scss">
-  @use '$lib/styles/vars' as *;
-
+<style>
   main {
     padding: 1rem;
     flex: 1 1 auto;
@@ -129,7 +127,7 @@
   }
 
   .preload-error {
-    color: $amber;
+    color: var(--amber);
     text-align: center;
     margin-top: 1rem;
   }

@@ -35,39 +35,39 @@
   {icons[stage]}
 </button>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   #control {
     width: 6rem;
     height: 6rem;
     font-size: 4rem;
     align-self: flex-end;
 
-    color: $amber;
-    border: 1px solid $amber;
+    color: var(--amber);
+    border: 1px solid var(--amber);
     border-radius: 4px;
-    background: $background;
+    background: var(--background);
 
     &:disabled {
-      @include disabled-colors;
-    }
-
-    @keyframes pulsate {
-      0% {
-        box-shadow: 0 0.1rem 0.5rem rgba($amber, 0);
-      }
-      50% {
-        box-shadow: 0 0.1rem 0.5rem rgba($amber, 0.4);
-      }
-      100% {
-        box-shadow: 0 0.1rem 0.5rem rgba($amber, 0.8);
-      }
+      color: var(--disabled);
+      border-color: var(--disabled);
+      border-style: dashed;
     }
 
     &:focus {
-      outline: $amber;
+      outline: var(--amber);
       animation: pulsate 1s alternate infinite;
+    }
+  }
+
+  @keyframes pulsate {
+    0% {
+      box-shadow: 0 0.1rem 0.5rem color-mix(in srgb, var(--amber) 0%, transparent);
+    }
+    50% {
+      box-shadow: 0 0.1rem 0.5rem color-mix(in srgb, var(--amber) 40%, transparent);
+    }
+    100% {
+      box-shadow: 0 0.1rem 0.5rem color-mix(in srgb, var(--amber) 80%, transparent);
     }
   }
 </style>

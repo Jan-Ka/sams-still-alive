@@ -22,36 +22,38 @@
   </svg>
 </button>
 
-<style lang="scss">
-  @use '../styles/vars' as *;
-
+<style>
   #test {
     height: 2rem;
     width: 2rem;
 
-    @include styled-border;
+    border: 1px solid var(--amber);
+    border-radius: 4px;
+    background: var(--background);
 
     &:hover {
-      background: $amber;
-      color: $background;
+      background: var(--amber);
+      color: var(--background);
 
       svg path {
-        fill: $background;
+        fill: var(--background);
       }
     }
 
     &:disabled,
     &:disabled:hover {
-      @include disabled-colors;
-      background: $background;
+      color: var(--disabled);
+      border-color: var(--disabled);
+      border-style: dashed;
+      background: var(--background);
 
       svg path {
-        fill: $disabled;
+        fill: var(--disabled);
       }
     }
 
     svg path {
-      fill: $amber;
+      fill: var(--amber);
     }
   }
 </style>
