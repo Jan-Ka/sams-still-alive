@@ -1,4 +1,21 @@
 node_modules
-.parcel-cache
-dist
+.svelte-kit
+build
+.DS_Store
+.env
+.env.*
+!.env.example
 *.quokka.js
+
+# AI agent configuration — kept local, never committed
+CLAUDE.md
+AGENTS.md
+GEMINI.md
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.windsurf/
+.codeium/
+.continue/
+.github/copilot-instructions.md
