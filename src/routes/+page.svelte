@@ -28,7 +28,7 @@
   let settingsVisible = $derived(stage === CONTROL_BUTTON_STATES.PLAY);
   let terminalVisible = $derived(stage === CONTROL_BUTTON_STATES.STOP);
   let controlDisabled = $derived(
-    stage === CONTROL_BUTTON_STATES.PLAY && preloadState !== 'ready'
+    stage === CONTROL_BUTTON_STATES.PLAY && preloadState === 'loading'
   );
 
   onMount(() => {

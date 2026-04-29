@@ -51,22 +51,27 @@
   }
 
   const options = $derived<VoiceOption[]>(
-    voices.map((voice) => {
-      const tierMatch = voice.name.match(TIER_RE);
-      const tier = (tierMatch ? tierMatch[1] : null) as Tier;
-      const displayName = tier ? voice.name.replace(TIER_RE, '').trim() : voice.name;
-      const primaryLang = (voice.lang.split('-')[0] || voice.lang).toLowerCase();
-      return {
-        key: voice.voiceURI,
-        voice,
-        displayName,
-        tier,
-        lang: voice.lang,
-        primaryLang,
-        langLabel: labelForLang(voice.lang, false),
-        primaryLangLabel: labelForLang(voice.lang, true)
-      };
-    })
+    voices
+      .map((voice) => {
+        const tierMatch = voice.name.match(TIER_RE);
+        const tier = (tierMatch ? tierMatch[1] : null) as Tier;
+        const displayName = tier ? voice.name.replace(TIER_RE, '').trim() : voice.name;
+        const primaryLang = (voice.lang.split('-')[0] || voice.lang).toLowerCase();
+        return {
+          key: voice.voiceURI,
+          voice,
+          displayName,
+          tier,
+          lang: voice.lang,
+          primaryLang,
+          langLabel: labelForLang(voice.lang, false),
+          primaryLangLabel: labelForLang(voice.lang, true)
+        };
+      })
+      .sort((a, b) => {
+        const byLang = a.primaryLangLabel.localeCompare(b.primaryLangLabel);
+        return byLang === 0 ? a.displayName.localeCompare(b.displayName) : byLang;
+      })
   );
 
   const filtered = $derived.by(() => {
@@ -104,10 +109,19 @@
 
   let isDisabled = $derived(options.length === 0);
 
-  let initialized = false;
+  let userPicked = false;
   $effect(() => {
-    if (initialized || options.length === 0) return;
-    initialized = true;
+    if (options.length === 0) {
+      selectedKey = '';
+      return;
+    }
+    if (userPicked) {
+      if (options.some((o) => o.key === selectedKey)) return;
+      const fallback = options.find((o) => o.voice.default) ?? options[0];
+      selectedKey = fallback.key;
+      onchange?.(fallback.voice);
+      return;
+    }
     let stored: string | null = null;
     if (browser) {
       try {
@@ -119,16 +133,9 @@
     const fromStorage = stored ? options.find((o) => o.key === stored) : undefined;
     const fallback = options.find((o) => o.voice.default) ?? options[0];
     const pick = fromStorage ?? fallback;
+    if (pick.key === selectedKey) return;
     selectedKey = pick.key;
     onchange?.(pick.voice);
-  });
-
-  $effect(() => {
-    if (!selectedKey || options.length === 0) return;
-    if (options.some((o) => o.key === selectedKey)) return;
-    const fallback = options.find((o) => o.voice.default) ?? options[0];
-    selectedKey = fallback.key;
-    onchange?.(fallback.voice);
   });
 
   $effect(() => {
@@ -145,6 +152,7 @@
   }
 
   function handleSelect(option: VoiceOption) {
+    userPicked = true;
     selectedKey = option.key;
     persist(option.key);
     onchange?.(option.voice);
@@ -246,7 +254,10 @@
     border-radius: 4px;
     font-family: var(--font-family);
   }
-  .search:focus { outline: var(--amber); }
+  .search:focus-visible {
+    outline: 2px solid var(--amber);
+    outline-offset: 2px;
+  }
   .search:disabled {
     color: var(--disabled);
     border-color: var(--disabled);
