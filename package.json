@@ -42,7 +42,7 @@
     "husky": "^9.1.7",
     "playwright": "^1.59.1",
     "postcss": "^8.5.12",
-    "svelte": "^5.55.5",
+    "svelte": "^5.55.7",
     "svelte-check": "^4.4.6",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
